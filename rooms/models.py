@@ -65,13 +65,13 @@ class Room(core_models.AbstractTimeStamp):
     bedrooms = models.IntegerField()
     bedrooms = models.IntegerField()
     baths = models.IntegerField()
-    checkin = models.TimeField()
-    checkout = models.TimeField()
+    check_in = models.TimeField()
+    check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
     host = models.ForeignKey("users.User", on_delete=models.CASCADE)
     room_type = models.ForeignKey("RoomType", on_delete=models.SET_NULL, null=True)
     amenities = models.ManyToManyField("Amenity", blank=True)
-    Facilities = models.ManyToManyField("Facility", blank=True)
+    facilities = models.ManyToManyField("Facility", blank=True)
     house_rules = models.ManyToManyField("HouseRule", blank=True)
 
     def __str__(self):
