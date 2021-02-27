@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import mark_safe
 from . import models
 
 # Register your models here.
@@ -18,19 +19,37 @@ class ItemAdmin(admin.ModelAdmin):
         return obj.rooms.count()
 
 
+class PhotoInline(admin.TabularInline):
+
+    model = models.Photo
+
+
+# Antoher Option
+class PhotoInline2(admin.StackedInline):
+
+    model = models.Photo
+
+
 @admin.register(models.Room)
 class RoomAdmin(admin.ModelAdmin):
 
     """ Room Admin Definition """
 
+    inlines = (PhotoInline,)
+    # inlines = (PhotoInline2,)
+
     fieldsets = (
         (
             "Basic Info",
-            {"fields": ("name", "description", "country", "address", "price")},
+            {"fields": ("name", "description", "country", "city", "address", "price")},
         ),
         (
             "Times",
             {"fields": ("check_in", "check_out", "instant_book")},
+        ),
+        (
+            "Spaces",
+            {"fields": ("guests", "beds", "bedrooms", "bathrooms")},
         ),
         (
             "Mores about the space",
@@ -53,7 +72,7 @@ class RoomAdmin(admin.ModelAdmin):
         "guests",
         "beds",
         "bedrooms",
-        "baths",
+        "bathrooms",
         "check_in",
         "check_out",
         "instant_book",
@@ -82,9 +101,15 @@ class RoomAdmin(admin.ModelAdmin):
         "^host__username",
     )
 
+    raw_id_fields = ("host",)
+
     filter_horizontal = ("facilities",)
 
     filter_vertical = ("house_rules",)
+
+    def save_model(self, request, obj, form, change):
+        # print(obj, change, form)
+        super().save_model(self, request, obj, form, change)
 
     def count_amenities(self, obj):
         print(obj)
@@ -107,4 +132,9 @@ class PhotoAdmin(admin.ModelAdmin):
 
     """ Photo Admin Definition """
 
-    pass
+    list_display = ("__str__", "get_thumbnail")
+
+    def get_thumbnail(self, obj):
+        return mark_safe('<img src="{}"  width="50px" />'.format(obj.file.url))
+
+    get_thumbnail.short_description = "Thumbnail"

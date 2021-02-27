@@ -63,8 +63,7 @@ class Room(core_models.AbstractTimeStamp):
     guests = models.IntegerField()
     beds = models.IntegerField()
     bedrooms = models.IntegerField()
-    bedrooms = models.IntegerField()
-    baths = models.IntegerField()
+    bathrooms = models.IntegerField()
     check_in = models.TimeField()
     check_out = models.TimeField()
     instant_book = models.BooleanField(default=False)
@@ -81,13 +80,24 @@ class Room(core_models.AbstractTimeStamp):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.city = str.capitalize(self.city)
+        super().save(*args, **kwargs)
+
+    def total_rating(self):
+        all_reviews = self.reviews.all()
+        all_rating = 0
+        for review in all_reviews:
+            all_rating += review.rating_average()
+        return round(all_rating / len(all_reviews), 2)
+
 
 class Photo(core_models.AbstractTimeStamp):
 
     """ Phoro Model Definition """
 
     caption = models.CharField(max_length=80)
-    file = models.ImageField()
+    file = models.ImageField(upload_to="room_photos")
     room = models.ForeignKey("Room", related_name="photos", on_delete=models.CASCADE)
 
     def __str__(self):

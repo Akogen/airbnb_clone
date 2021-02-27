@@ -1,12 +1,20 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from rooms import models as rooms_models
 from . import models
+
+
+class RoomInline(admin.StackedInline):
+
+    model = rooms_models.Room
 
 
 @admin.register(models.User)
 class CustomUserAdmin(UserAdmin):
 
     """ Custom User Admin """
+
+    inlines = (RoomInline,)
 
     fieldsets = UserAdmin.fieldsets + (
         (
@@ -36,5 +44,6 @@ class CustomUserAdmin(UserAdmin):
         "language",
         "currency",
         "super_hosts",
+        "is_staff",
         "is_superuser",
     )
