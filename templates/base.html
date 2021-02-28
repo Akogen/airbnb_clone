@@ -1,0 +1,20 @@
+<!DOCTYPE html?
+<html lang="en">
+    <head>
+        {% include "partials/head.html" %}
+        <title>{% block page_name %}{% endblock page_name %} |  Airbnb Clone</title>
+    </head>
+    <body>
+        <div>
+            <div>
+{% include "partials/header.html" %}
+            </div>
+            <div>
+{% block content %}{% endblock content %}
+            </div>
+            <div>
+{% include "partials/footer.html" %}
+            </div>
+        </div>
+    </body>
+</html>
