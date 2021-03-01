@@ -1,7 +1,9 @@
 from datetime import datetime
 from math import ceil
 from django.utils import timezone
-from django.views.generic import ListView
+from django.http import Http404
+from django.urls import reverse
+from django.views.generic import ListView, DetailView
 from django.shortcuts import render, redirect
 from django.http import HttpResponse  # for sample2 only
 from django.core.paginator import Paginator, EmptyPage
@@ -9,20 +11,31 @@ from . import models
 
 
 # without render sample
-def sample2(request):
+def listview_simple(request):
     now = datetime.now()
     return HttpResponse(content="<h1>Hello {}</h1>".format(now))
 
 
 # with render sample
-def sample(request):
+def listview_simple2(request):
     now = datetime.now()
     hungry = True
-    return render(request, "sample.html", context={"now": now, "hungry": hungry})
+    return render(
+        request, "rooms/listview_simple.html", context={"now": now, "hungry": hungry}
+    )
 
 
-# all_room Simple Format
-def all_rooms_simple(request):
+def detailview_simple(request, pk):
+    try:
+        room = models.Room.objects.get(pk=pk)
+        return render(request, "rooms/room_detail.html", context={"room": room})
+    except models.Room.DoesNotExist:
+        # return redirect(reverse("core:home"))
+        raise Http404()
+
+
+# list Simple Format
+def listview_simple3(request):
     # Lazy Loading
     all_rooms = models.Room.objects.all()[0:20]
     return render(
@@ -34,8 +47,8 @@ def all_rooms_simple(request):
     )
 
 
-# all_rooms from scratch
-def all_rooms_scratch(request):
+# list from scratch
+def listview_scratch(request):
     # http://127.0.0.1:8000/?page=1&city=fullerton
     # Output: <QueryDict: {'page': ['1'], 'city': ['fullerton']}>
     # print(request.GET)  # "GET /?page=1&city=fullerton HTTP/1.1"
@@ -63,8 +76,8 @@ def all_rooms_scratch(request):
     )
 
 
-# all_rooms from pagenator FBV get_page -- Less Control, everything ready to use
-def all_rooms_FBV_getpage(request):
+# list from pagenator FBV get_page -- Less Control, everything ready to use
+def listview_FBV_getpage(request):
     page = request.GET.get("page")
     room_list = models.Room.objects.all()
 
@@ -75,8 +88,8 @@ def all_rooms_FBV_getpage(request):
     return render(request, "rooms/home_FBV_getpage.html", {"page": rooms})
 
 
-# all_rooms from pagenator FBV page -- More Control, More Error ControlS
-def all_rooms_FBV_page(request):
+# list from pagenator FBV page -- More Control, More Error ControlS
+def listview_FBV_page(request):
     page = request.GET.get("page", 1)
     room_list = models.Room.objects.all()
 
@@ -106,3 +119,10 @@ class HomeView(ListView):
         now = timezone.now()
         context["now"] = now
         return context
+
+
+class RoomDetail(DetailView):
+
+    """ RoomDetaill Definition """
+
+    model = models.Room

@@ -3,7 +3,7 @@
 {% block content %}      
         <h1>All Rooms {{now}}</h1>
         {% for room in object_list %}
-            <h4>{{room.name}}</h4>
+            <h3><a href="{% url "rooms:detail" room.pk %}">{{room.name}} / $ {{room.price}}</a></h3>
         {% endfor %}
 
         <h5>
