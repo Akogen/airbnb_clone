@@ -49,7 +49,7 @@ class RoomAdmin(admin.ModelAdmin):
         ),
         (
             "Spaces",
-            {"fields": ("guests", "beds", "bedrooms", "bathrooms")},
+            {"fields": ("room_type", "guests", "beds", "bedrooms", "bathrooms")},
         ),
         (
             "Mores about the space",
@@ -107,9 +107,9 @@ class RoomAdmin(admin.ModelAdmin):
 
     filter_vertical = ("house_rules",)
 
-    def save_model(self, request, obj, form, change):
-        # print(obj, change, form)
-        super().save_model(self, request, obj, form, change)
+    # def save_model(self, request, obj, form, change):
+    #    print(obj)
+    #    super().save_model(self, request, obj, form, change)
 
     def count_amenities(self, obj):
         print(obj)

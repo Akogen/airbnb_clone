@@ -2,12 +2,12 @@ from datetime import datetime
 from math import ceil
 from django.utils import timezone
 from django.http import Http404
-from django.urls import reverse
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, View
 from django.shortcuts import render, redirect
 from django.http import HttpResponse  # for sample2 only
 from django.core.paginator import Paginator, EmptyPage
-from . import models
+from django_countries import countries
+from . import models, forms
 
 
 # without render sample
@@ -126,3 +126,183 @@ class RoomDetail(DetailView):
     """ RoomDetaill Definition """
 
     model = models.Room
+
+
+def search_scracth(request):
+    city = request.GET.get("city", "Anywhere")
+    city = str.capitalize(city)
+    country = request.GET.get("country", "US")
+    # request.GET.get("room_type", 0) IS STRING
+    room_type = int(request.GET.get("room_type", 0))
+    price = int(request.GET.get("price", 0))
+    guests = int(request.GET.get("guests", 0))
+    bedrooms = int(request.GET.get("bedrooms", 0))
+    beds = int(request.GET.get("beds", 0))
+    bathrooms = int(request.GET.get("bathrooms", 0))
+    instant_book = bool(request.GET.get("instant_book", False))
+    super_host = bool(request.GET.get("super_host", False))
+    s_amenities = request.GET.getlist("amenities")
+    s_facilities = request.GET.getlist("facilities")
+
+    form = {
+        "selected_city": city,
+        "selected_country": country,
+        "selected_room_type": room_type,
+        "selected_price": price,
+        "selected_guests": guests,
+        "selected_bedrooms": bedrooms,
+        "selected_beds": beds,
+        "selected_bathrooms": bathrooms,
+        "selected_amenities": s_amenities,
+        "selected_facilities": s_facilities,
+        "selected_instant_book": instant_book,
+        "selected_super_host": super_host,
+    }
+
+    room_types = models.RoomType.objects.all()
+    amenities = models.Amenity.objects.all()
+    facilities = models.Facility.objects.all()
+
+    choices = {
+        "countries": countries,
+        "room_types": room_types,
+        "amenities": amenities,
+        "facilities": facilities,
+    }
+
+    filter_args = {}
+
+    if city != "Anywhere":
+        filter_args["city__startswith"] = city
+
+    filter_args["country"] = country
+
+    if room_type != 0:
+        filter_args["room_type__pk__exact"] = room_type
+
+    if price != 0:
+        filter_args["price__lte"] = price
+
+    if guests != 0:
+        filter_args["guests__gte"] = guests
+
+    if bedrooms != 0:
+        filter_args["bedrooms__gte"] = bedrooms
+
+    if beds != 0:
+        filter_args["beds__gte"] = beds
+
+    if bathrooms != 0:
+        filter_args["bathrooms__gte"] = bathrooms
+
+    if instant_book is True:
+        filter_args["instant_book"] = True
+
+    if super_host is True:
+        filter_args["host__super_host"] = True
+
+    if len(s_amenities) > 0:
+        for s_amenity in s_amenities:
+            filter_args["amenities__pk"] = int(s_amenity)
+
+    if len(s_facilities) > 0:
+        for s_facility in s_facilities:
+            filter_args["facilities__pk"] = int(s_facility)
+
+    rooms = models.Room.objects.filter(**filter_args)
+
+    return render(
+        request,
+        "rooms/search_scratch.html",
+        context={**form, **choices, "rooms": rooms},  # ** unpack
+    )
+
+
+class SearchView(View):
+
+    """ SearchView Definition """
+
+    def get(self, request):
+
+        form = forms.SearchForm()
+
+        return render(request, "rooms/search.html", {"form": form})
+
+
+def search(request):
+
+    country = request.GET.get("country")
+
+    if country:
+
+        form = forms.SearchForm(request.GET)
+
+        if form.is_valid():
+            city = form.cleaned_data.get("city")
+            country = form.cleaned_data.get("country")
+            room_type = form.cleaned_data.get("room_type")
+            price = form.cleaned_data.get("price")
+            guests = form.cleaned_data.get("guests")
+            bedrooms = form.cleaned_data.get("bedrooms")
+            beds = form.cleaned_data.get("beds")
+            bathrooms = form.cleaned_data.get("bathrooms")
+            instant_book = form.cleaned_data.get("instant_book")
+            super_host = form.cleaned_data.get("super_host")
+            amenities = form.cleaned_data.get("amenities")
+            facilities = form.cleaned_data.get("facilities")
+
+            filter_args = {}
+
+            if city != "Anywhere":
+                filter_args["city__startswith"] = city
+
+            filter_args["country"] = country
+
+            if room_type is not None:
+                filter_args["room_type"] = room_type
+
+            if price is not None:
+                filter_args["price__lte"] = price
+
+            if guests is not None:
+                filter_args["guests__gte"] = guests
+
+            if bedrooms is not None:
+                filter_args["bedrooms__gte"] = bedrooms
+
+            if beds is not None:
+                filter_args["beds__gte"] = beds
+
+            if bathrooms is not None:
+                filter_args["bathrooms__gte"] = bathrooms
+
+            if instant_book is True:
+                filter_args["instant_book"] = True
+
+            if super_host is True:
+                print(super_host)
+                filter_args["host__super_hosts"] = True
+
+            for amenity in amenities:
+                filter_args["amenities"] = amenity
+
+            for facility in facilities:
+                filter_args["facilities"] = facility
+
+            qs = models.Room.objects.filter(**filter_args).order_by(
+                "-created"
+            )  # order by를 넣어야 순서가 정해지므로 Paginator에 문제가 안생긴다.
+            # qs = models.Room.order_by("created") ???
+
+            paginator = Paginator(qs, 10, orphans=5)
+
+            page = request.GET.get("page", 1)
+
+            rooms = paginator.get_page(page)
+
+            return render(request, "rooms/search.html", {"form": form, "rooms": rooms})
+    else:
+
+        form = forms.SearchForm()
+
+    return render(request, "rooms/search.html", {"form": form})  # 한칸위로 올린 이유 중요
