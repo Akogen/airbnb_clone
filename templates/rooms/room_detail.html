@@ -1,11 +1,14 @@
 {% extends "base.html" %}
 
 
-{% block page_name %}
-    Home 
-{% endblock page_name %}
+{% block page_title %}
+    {{room.name}} | Airbnb Clone
+{% endblock page_title %}
 
-{% block content %}      
+
+
+{% block content %}    
+
                 <div>
                     <h1>{{room.name}}</h1>
                     <h3>{{room.description}}</h3>
@@ -35,4 +38,5 @@
                     {% endfor %}
                     </ul>                                        
                 </div>
+                
 {% endblock content %}

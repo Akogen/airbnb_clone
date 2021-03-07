@@ -14,7 +14,7 @@ class CustomUserAdmin(UserAdmin):
 
     """ Custom User Admin """
 
-    inlines = (RoomInline,)
+    # inlines = (RoomInline,)
 
     fieldsets = UserAdmin.fieldsets + (
         (

@@ -61,7 +61,7 @@ class Room(core_models.AbstractTimeStamp):
     city = models.CharField(max_length=80)
     price = models.IntegerField()
     address = models.CharField(max_length=140)
-    guests = models.IntegerField()
+    guests = models.IntegerField(help_text="How many people will be staying?")
     beds = models.IntegerField()
     bedrooms = models.IntegerField()
     bathrooms = models.IntegerField()
@@ -83,7 +83,7 @@ class Room(core_models.AbstractTimeStamp):
 
     def save(self, *args, **kwargs):
         self.city = str.capitalize(self.city)
-        super().save(*args, **kwargs)
+        super().save(self, *args, **kwargs)
 
     def get_absolute_url(self):
         return reverse("rooms:detail", kwargs={"pk": self.pk})

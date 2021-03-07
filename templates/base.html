@@ -2,12 +2,20 @@
 <html lang="en">
     <head>
         {% include "partials/head.html" %}
-        <title>{% block page_name %}{% endblock page_name %} |  Airbnb Clone</title>
+        <title>{% block page_title %}{% endblock page_title %} |  Airbnb Clone</title>
     </head>
     <body>
         <div>
             <div>
-{% include "partials/header.html" %}
+                <header>
+{% include "partials/navigation.html" %}
+{% block search-bar %}
+                    <form method="get" action="{% url "rooms:search" %}">
+                        <input name="city" value="" placeholder="Search by City" />
+
+                    </form>
+{% endblock search-bar %}
+                </header>
             </div>
             <div>
 {% block content %}{% endblock content %}
