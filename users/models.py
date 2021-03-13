@@ -26,6 +26,16 @@ class User(AbstractUser):
 
     CURRENCY_CHOICES = ((CURRENCY_ENGLISH, "USD"), (CURRENCY_KOREAN, "KRW"))
 
+    LOGIN_EMAIL = "email"
+    LOGIN_GITHUB = "github"
+    LOGING_KAKAO = "kakao"
+
+    LOGIN_CHOICES = (
+        (LOGIN_EMAIL, "Email"),
+        (LOGIN_GITHUB, "Github"),
+        (LOGING_KAKAO, "Kakao"),
+    )
+
     avatar = models.ImageField(upload_to="avatars", blank=True)
     gender = models.CharField(
         choices=GENDER_CHOICES,
@@ -44,6 +54,9 @@ class User(AbstractUser):
     super_hosts = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
     email_secret = models.CharField(max_length=20, default="", blank=True)
+    login_method = models.CharField(
+        max_length=50, choices=LOGIN_CHOICES, default=LOGIN_EMAIL
+    )
 
     def verify_email(self):
         if self.email_verified is False:
@@ -53,7 +66,7 @@ class User(AbstractUser):
             html_message = render_to_string(
                 "emails/verify_email.html", {"secret": secret}
             )
-            print(html_message)
+
             send_mail(
                 "Verify Airbnb Clone Account",
                 strip_tags(html_message),
